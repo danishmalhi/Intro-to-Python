@@ -1,0 +1,250 @@
+
+# CS-UY 1114
+# Final Project
+
+import turtle
+import time
+import random
+import math
+
+# This list represents the board. It's a list
+# of nine strings, each of which is either
+# "X", "O", "_", representing, respectively,
+# a position occupied by an X, by an O, and
+# an unoccupied position. The first three
+# elements in the list represent the first row,
+# and so on. Initially, all positions are
+# unoccupied.
+the_board = [ "_", "_", "_",
+              "_", "_", "_",
+              "_", "_", "_"]
+
+def draw_board(board):
+    """
+    signature: list(str) -> NoneType
+    Given the current state of the game, draws
+    the board on the screen, including the
+    lines and the X and O pieces at the position
+    indicated by the parameter.
+    Hint: Write this function first!
+    """
+    
+    def cross(c): 
+        turtle.up()
+        turtle.goto(c[0]-20,c[1]+20)
+        turtle.right(45)
+        turtle.down()
+        turtle.forward(40*2**0.5)
+        turtle.up()
+        turtle.goto(c[0]-20,c[1]-20)
+        turtle.right(-90)
+        turtle.down()
+        turtle.forward(40*2**0.5)
+        turtle.right(45)
+
+    def zero(c):
+        turtle.up()
+        turtle.goto(c[0],c[1]-20)
+        turtle.down()
+        turtle.circle(20)
+    
+    turtle.clear()
+    turtle.up()
+    turtle.ht()
+    turtle.goto(-120,120)
+    turtle.down()    
+    turtle.forward(240)
+    turtle.right(90)
+    turtle.forward(240)
+    turtle.right(90)
+    turtle.forward(240)
+    turtle.right(90)
+    turtle.forward(240)
+    turtle.up()
+    turtle.goto(-40,-120)
+    turtle.down()
+    turtle.forward(240)
+    turtle.up()
+    turtle.goto(40,-120)
+    turtle.down()
+    turtle.forward(240)
+    turtle.up()
+    turtle.right(90)
+    turtle.goto(-120,40)
+    turtle.down()
+    turtle.forward(240)
+    turtle.up()
+    turtle.goto(-120,-40)
+    turtle.down()
+    turtle.forward(240)
+    
+    center = [[-80,80],[0,80],[80,80],
+              [-80,0],[0,0],[80,0],
+              [-80,-80],[0,-80],[80,-80]]
+    
+    turtle.pensize(5)
+    for i in range(9):
+        if board[i]=='X':
+            cross(center[i])
+        if board[i]=='O':
+            zero(center[i]) 
+    turtle.pensize(1)        
+        
+    turtle.update()
+    
+
+def do_user_move(board, x, y):
+    """
+    signature: list(str), int, int -> bool
+    Given a list representing the state of the board
+    and an x,y screen coordinate pair indicating where
+    the user clicked, update the board
+    with an O in the corresponding position. Your
+    code will need to translate the screen coordinate
+    (a pixel position where the user clicked) into the
+    corresponding board position (a value between 0 and
+    8 inclusive, identifying one of the 9 board positions).
+    The function returns a bool indicated if
+    the operation was successful: if the user
+    clicks on a position that is already occupied
+    or outside of the board area, the move is
+    invalid, and the function should return False,
+    otherise True.
+    """
+    print("user clicked at "+str(x)+","+str(y))
+    y,x = math.floor((x+120)/80),2-math.floor((y+120)/80);
+    pos = 3*x+y;
+    if x>=0 and x<=2 and y>=0 and y<=2:
+        if board[pos]=='_': 
+            board[pos] = 'O'
+            return True
+    print("Invalid Entry, play again...")
+    return False
+
+def check_game_over(board):
+    """
+    signature: list(str) -> bool
+    Given the current state of the board, determine
+    if the game is over, by checking for
+    a three-in-a-row pattern in horizontal,
+    vertical, or diagonal lines; and also if the
+    game has reached a stalemate, achieved when
+    the board is full and no further move is possible.
+    If there is a winner or if there is a stalemante, display
+    an appropriate message to the user and clear the board
+    in preparation for the next round. If the game is over,
+    return True, otherwise False.
+    """
+    if ((board[:3]==['O']*3) or (board[3:6]==['O']*3) or (board[6:]==['O']*3)
+        or (board[0::3]==['O']*3) or (board[1::3]==['O']*3) or (board[2::3]==['O']*3)
+       or (board[0::4]==['O']*3) or (board[2:-1:2]==['O']*3)):
+        print("O wins")
+        turtle.up()
+        turtle.goto(-25,-160)
+        turtle.down()
+        turtle.write("O wins", font=("Arial", 20, "normal"))
+        return True;
+    
+    #Checks X's win
+    if ((board[:3]==['X']*3) or (board[3:6]==['X']*3) or (board[6:]==['X']*3)
+        or (board[0::3]==['X']*3) or (board[1::3]==['X']*3) or (board[2::3]==['X']*3)
+       or (board[0::4]==['X']*3) or (board[2:-1:2]==['X']*3)):
+        print("X wins")
+        turtle.up()
+        turtle.goto(-25,-160)
+        turtle.down()
+        turtle.write("X wins", font=("Arial", 20, "normal"))
+        return True;   
+    
+    #Checks if its a draw
+    if not('_' in the_board):
+        print("Its a draw")
+        turtle.up()
+        turtle.goto(-40,-160)
+        turtle.down()
+        turtle.write("Stalemate", font=("Arial", 20, "normal"))
+        return True;
+    
+    return False;
+
+def do_computer_move(board):
+    """
+    The computer plays according to the below logic
+    """
+    def c_win_next_move(cur_board,x):
+        """
+        Checks a possible win of computer (itself) in its immediate next move
+        """
+        board = [x for x in cur_board]
+        board[x] = 'X';
+        if ((board[:3]==['X']*3) or (board[3:6]==['X']*3) or (board[6:]==['X']*3)
+            or (board[0::3]==['X']*3) or (board[1::3]==['X']*3) or (board[2::3]==['X']*3)
+           or (board[0::4]==['X']*3) or (board[2:-1:2]==['X']*3)):
+            return True;
+        return False;  
+
+    def h_win_next_move(cur_board,x):
+        """
+        Checks a possible win of human in human's immediate next move
+        """
+        board = [x for x in cur_board]
+        board[x] = 'O';
+        if ((board[:3]==['O']*3) or (board[3:6]==['O']*3) or (board[6:]==['O']*3)
+            or (board[0::3]==['O']*3) or (board[1::3]==['O']*3) or (board[2::3]==['O']*3)
+           or (board[0::4]==['O']*3) or (board[2:-1:2]==['O']*3)):
+            return True;
+        return False;
+    
+    #Finds its next possible win
+    for i in range(9):
+        if the_board[i]=='_':
+            if c_win_next_move(the_board,i):
+                the_board[i]='X'
+                return;
+    
+    #Finds its humans next possible win
+    for i in range(9):
+        if the_board[i]=='_':
+            if h_win_next_move(the_board,i):
+                the_board[i]='X'
+                return;
+    
+    #Else chooses any valid move
+    valid = [];
+    for i in range(9):
+        if the_board[i]=='_':
+            valid+=[i];
+    pos = random.choice(valid)
+    the_board[pos] = 'X';
+    return 
+
+def clickhandler(x, y):
+    """
+    signature: int, int -> NoneType
+    This function is called by turtle in response
+    to a user click. The parameters are the screen
+    coordinates indicating where the click happened.
+    The function will call other functions. You do not
+    need to modify this function, but you do need
+    to understand it.
+    """
+    if do_user_move(the_board,x,y):
+        draw_board(the_board)
+        if not check_game_over(the_board):
+            do_computer_move(the_board)
+            draw_board(the_board)
+            check_game_over(the_board)
+
+def main():
+    """
+    signature: () -> NoneType
+    Runs the tic-tac-toe game. You shouldn't
+    need to modify this function.
+    """
+    turtle.tracer(0,0)
+    turtle.hideturtle()
+    turtle.onscreenclick(clickhandler)
+    draw_board(the_board)
+    turtle.mainloop()
+
+main()
